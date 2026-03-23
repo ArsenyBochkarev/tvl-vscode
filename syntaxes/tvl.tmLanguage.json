@@ -1,0 +1,88 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "TVL",
+	"patterns": [
+	  {
+		"include": "#comments"
+	  },
+	  {
+		"include": "#keywords"
+	  },
+	  {
+		"include": "#strings"
+	  },
+	  {
+		"include": "#operators"
+	  },
+	  {
+		"include": "#numbers"
+	  }
+	],
+	"repository": {
+	  "comments": {
+		"patterns": [
+		  {
+			"begin": "/\\*",
+			"end": "\\*/",
+			"name": "comment.block.tvl"
+		  },
+		  {
+			"match": "//.*$",
+			"name": "comment.line.double-slash.tvl"
+		  }
+		]
+	  },
+	  "keywords": {
+		"patterns": [
+		  {
+		    "match": "([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)",
+		    "captures": {
+		  	"1": {
+		  	  "name": "entity.name.function.tvl"
+		  	},
+		  	"2": {
+		  	  "name": "punctuation.separator.label.tvl"
+		  	}
+		    }
+		  },
+		  {
+			"match": "\\b(parallel|for|from|repeat|send|to|receive alts|receive|skip|break)\\b",
+			"name": "keyword.control.tvl"
+		  },
+		  {
+			"match": "\\b(module|specs)\\b",
+			"name": "storage.type.tvl"
+		  },
+		  {
+			"match": "\\b(actor)\\b",
+			"name": "entity.name.function.tvl"
+		  },
+		  {
+			"match": "\\b(int|bool|string|void|true|false)\\b",
+			"name": "support.type.tvl"
+		  },
+		  {
+			"match": "\\b(ltl|ctl)\\b",
+			"name": "keyword.other.tvl" 
+		  }
+		]
+	  },
+	  "strings": {
+		"match": "\"[^\"]*\"",
+		"name": "string.quoted.double.tvl"
+	  },
+	  "operators": {
+		"patterns": [
+		  {
+			"match": "(!|\\?|->|=>|==|!=|<=|>=|<|>|\\+|-|\\*|/|=|\\|\\||&&)",
+			"name": "keyword.operator.tvl"
+		  }
+		]
+	  },
+	  "numbers": {
+		"match": "\\b\\d+(\\.\\d+)?\\b",
+		"name": "constant.numeric.tvl"
+	  }
+	},
+	"scopeName": "source.tvl"
+  }

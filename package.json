@@ -1,0 +1,74 @@
+{
+  "name": "tvl",
+  "displayName": "TVL Language Support for VS Code",
+  "publisher": "ArsenyBochkarev",
+  "description": "Syntax highlighting and verification for TVL",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.110.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "tvl",
+        "aliases": [
+          "TVL",
+          "tvl"
+        ],
+        "extensions": [
+          ".tvl"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tvl",
+        "scopeName": "source.tvl",
+        "path": "./syntaxes/tvl.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "tvl.verify",
+        "title": "Verify TVL Model",
+        "icon": "$(play)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "resourceLangId == tvl",
+          "command": "tvl.verify",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "TVL Configuration",
+      "properties": {
+        "tvl.verifierCommand": {
+          "type": "string",
+          "default": "/home/apb-sc/University/ITMO/3_semester/diploma/TVL/translate",
+          "description": "Command to run the verification python script."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/vscode": "^1.110.0",
+    "typescript": "^5.9.3"
+  }
+}
