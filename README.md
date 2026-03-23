@@ -2,7 +2,18 @@
 
 This extension makes it possible to verify protocols written in TVL language.
 
-## How to use
+## Requirements
+
+- VS Code version >= 1.110.0
+
+## How to install extension
+
+1. Open "Extensions" in VS Code
+2. Open "..." menu
+3. Click on "Install from VSIX..."
+4. Set path to .vsix file provided in this repo
+
+## How to use extension
 
 1. Press "Verify" button at the top right of screen
 2. Choose model checker
