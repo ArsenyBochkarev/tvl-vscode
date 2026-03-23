@@ -49,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
         
         terminal.show();
 
-        const verifyFullCmd = `${verifierCmd} "${sourcePath}" ${checker.target}`;
+        const verifyFullCmd = `${verifierCmd}/translate "${sourcePath}" ${checker.target}`;
         terminal.sendText(`echo "=== Running Verification ===" && ${verifyFullCmd}`);
     });
 

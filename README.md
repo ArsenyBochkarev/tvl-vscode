@@ -12,6 +12,10 @@ This extension makes it possible to verify protocols written in TVL language.
 2. Open "..." menu
 3. Click on "Install from VSIX..."
 4. Set path to .vsix file provided in this repo
+5. Once extension is installed, provide path to TVL:
+  - File -> Preferences -> Settings
+  - Search "TVL"
+  - In field "Tvl: Verifier Command" provide path to [TVL](https://github.com/ArsenyBochkarev/TVL) repo
 
 ## How to use extension
 

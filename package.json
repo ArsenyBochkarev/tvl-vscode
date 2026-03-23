@@ -59,8 +59,8 @@
       "properties": {
         "tvl.verifierCommand": {
           "type": "string",
-          "default": "/home/apb-sc/University/ITMO/3_semester/diploma/TVL/translate",
-          "description": "Command to run the verification python script."
+          "default": "/path/to/TVL/repo",
+          "description": "Path to repo with TVL sources."
         }
       }
     }
