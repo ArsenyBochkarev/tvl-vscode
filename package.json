@@ -4,6 +4,10 @@
   "publisher": "ArsenyBochkarev",
   "description": "Syntax highlighting and verification for TVL",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArsenyBochkarev/tvl-vscode"
+  },
   "engines": {
     "vscode": "^1.110.0"
   },
