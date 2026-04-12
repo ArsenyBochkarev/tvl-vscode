@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 
 export function activate(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('tvl.verify', async () => {
@@ -20,7 +19,6 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const sourcePath = document.uri.fsPath;
-        const parsedPath = path.parse(sourcePath);
 
         const checker = await vscode.window.showQuickPick(
             [
@@ -29,8 +27,24 @@ export function activate(context: vscode.ExtensionContext) {
             ], 
             { placeHolder: 'Select target model checker' }
         );
-
         if (!checker) {
+            return;
+        }
+
+        const defaultFlags = '--channel-size=20 --trace-size=20';
+        const extraFlags = await vscode.window.showInputBox({
+            prompt: 'Additional flags for TVL',
+            placeHolder: 'e.g., --channel-size=10 --trace-size=30',
+            value: defaultFlags,
+            validateInput: (value) => {
+                if (/[;&|`$]/.test(value)) {
+                    return 'Shell metacharacters (;, &, |, `, $) are not allowed for safety.';
+                }
+                return null;
+            }
+        });
+
+        if (extraFlags === undefined) {
             return;
         }
 
@@ -46,10 +60,10 @@ export function activate(context: vscode.ExtensionContext) {
         if (!terminal) {
             terminal = vscode.window.createTerminal('TVL Verifier');
         }
-        
-        terminal.show();
 
-        const verifyFullCmd = `${verifierCmd}/translate "${sourcePath}" ${checker.target}`;
+        terminal.show();
+        const flagsPart = extraFlags.trim() ? ` ${extraFlags.trim()}` : '';
+        const verifyFullCmd = `${verifierCmd}/translate "${sourcePath}" ${checker.target} ${flagsPart}`;
         terminal.sendText(`echo "=== Running Verification ===" && ${verifyFullCmd}`);
     });
 

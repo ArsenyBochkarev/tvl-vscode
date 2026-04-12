@@ -21,3 +21,4 @@ This extension makes it possible to verify protocols written in TVL language.
 
 1. Press "Verify" button at the top right of screen
 2. Choose model checker
+3. Optionally input additional parameters/flags
