@@ -1,6 +1,6 @@
 # TVL Language Support
 
-This extension makes it possible to verify protocols written in TVL language.
+This extension makes it possible to verify protocols written in [TVL language](https://github.com/ArsenyBochkarev/TVL).
 
 ## Requirements
 
