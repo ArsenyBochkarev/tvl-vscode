@@ -57,10 +57,15 @@
       "type": "object",
       "title": "TVL Configuration",
       "properties": {
+        "tvl.useDocker": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use Docker image 'tvl-env' for verification (Recommended). If false, falls back to local Verifier Command."
+        },
         "tvl.verifierCommand": {
           "type": "string",
           "default": "/path/to/TVL/repo",
-          "description": "Path to repo with TVL sources."
+          "description": "Fallback: Path to repo with TVL sources (used if Docker is disabled)."
         }
       }
     }

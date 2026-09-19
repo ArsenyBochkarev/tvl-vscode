@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 export function activate(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('tvl.verify', async () => {
@@ -49,11 +50,23 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const config = vscode.workspace.getConfiguration('tvl');
+        const useDocker = config.get<boolean>('useDocker', true);
         const verifierCmd = config.get<string>('verifierCommand');
 
-        if (!verifierCmd) {
-            vscode.window.showErrorMessage('Please configure TVL verifier commands in VS Code settings.');
-            return;
+        const flagsPart = extraFlags.trim() ? ` ${extraFlags.trim()}` : '';
+        let verifyFullCmd = '';
+
+        if (useDocker) {
+            const dir = path.dirname(sourcePath);
+            const file = path.basename(sourcePath);
+            // using the format user requested: docker run -it --rm --user dev -v $(pwd):/app tvl-env
+            verifyFullCmd = `docker run --rm -it --user dev -v "${dir}":/app -w /app tvl-env translate "${file}" ${checker.target}${flagsPart}`;
+        } else {
+            if (!verifierCmd) {
+                vscode.window.showErrorMessage('Please configure TVL verifier commands in VS Code settings.');
+                return;
+            }
+            verifyFullCmd = `${verifierCmd}/translate "${sourcePath}" ${checker.target}${flagsPart}`;
         }
 
         let terminal = vscode.window.terminals.find(t => t.name === 'TVL Verifier');
@@ -62,8 +75,6 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         terminal.show();
-        const flagsPart = extraFlags.trim() ? ` ${extraFlags.trim()}` : '';
-        const verifyFullCmd = `${verifierCmd}/translate "${sourcePath}" ${checker.target} ${flagsPart}`;
         terminal.sendText(`echo "=== Running Verification ===" && ${verifyFullCmd}`);
     });
 
