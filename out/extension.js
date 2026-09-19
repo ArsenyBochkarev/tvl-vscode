@@ -4,6 +4,8 @@ exports.activate = activate;
 exports.deactivate = deactivate;
 const vscode = require("vscode");
 const path = require("path");
+const fs = require("fs");
+const os = require("os");
 function activate(context) {
     let disposable = vscode.commands.registerCommand('tvl.verify', async () => {
         const editor = vscode.window.activeTextEditor;
@@ -44,21 +46,40 @@ function activate(context) {
         }
         const config = vscode.workspace.getConfiguration('tvl');
         const useDocker = config.get('useDocker', true);
-        const verifierCmd = config.get('verifierCommand');
+        const tvlRepo = config.get('tvlRepoPath', '').trim();
+        if (!tvlRepo || !fs.existsSync(path.join(tvlRepo, 'translate'))) {
+            vscode.window.showErrorMessage('Setting "tvl.tvlRepoPath" must point to the TVL repository (the folder containing the "translate" script).');
+            return;
+        }
         const flagsPart = extraFlags.trim() ? ` ${extraFlags.trim()}` : '';
         let verifyFullCmd = '';
         if (useDocker) {
+            // 'translate' lives in the TVL repo (not in the tvl-env image) and runs
+            // sbt + verifier.py from the repo root, so the repo is mounted at /tvl
+            // and used as the working directory. The model's folder is mounted at
+            // /app so translate writes its output next to the source file.
             const dir = path.dirname(sourcePath);
             const file = path.basename(sourcePath);
-            // using the format user requested: docker run -it --rm --user dev -v $(pwd):/app tvl-env
-            verifyFullCmd = `docker run --rm -it --user dev -v "${dir}":/app -w /app tvl-env translate "${file}" ${checker.target}${flagsPart}`;
+            // Persist sbt/coursier caches on the host so that throw-away (--rm)
+            // containers don't re-download the toolchain on every run. The
+            // directories are created here (not by Docker) so they are owned by
+            // the current user and writable by the container's 'dev' user.
+            const cacheRoot = path.join(os.homedir(), '.cache', 'tvl-docker');
+            const coursierCache = path.join(cacheRoot, 'cache');
+            const sbtCache = path.join(cacheRoot, 'sbt');
+            fs.mkdirSync(coursierCache, { recursive: true });
+            fs.mkdirSync(sbtCache, { recursive: true });
+            verifyFullCmd = [
+                'docker run --rm -it --user dev',
+                `-v "${tvlRepo}":/tvl`,
+                `-v "${dir}":/app`,
+                `-v "${coursierCache}":/home/dev/.cache`,
+                `-v "${sbtCache}":/home/dev/.sbt`,
+                `-w /tvl tvl-env ./translate "/app/${file}" ${checker.target}${flagsPart}`
+            ].join(' ');
         }
         else {
-            if (!verifierCmd) {
-                vscode.window.showErrorMessage('Please configure TVL verifier commands in VS Code settings.');
-                return;
-            }
-            verifyFullCmd = `${verifierCmd}/translate "${sourcePath}" ${checker.target}${flagsPart}`;
+            verifyFullCmd = `(cd "${tvlRepo}" && ./translate "${sourcePath}" ${checker.target}${flagsPart})`;
         }
         let terminal = vscode.window.terminals.find(t => t.name === 'TVL Verifier');
         if (!terminal) {
