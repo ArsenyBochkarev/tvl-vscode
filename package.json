@@ -3,7 +3,7 @@
   "displayName": "TVL Language Support for VS Code",
   "publisher": "ArsenyBochkarev",
   "description": "Syntax highlighting and verification for TVL",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/ArsenyBochkarev/tvl-vscode"
@@ -57,10 +57,15 @@
       "type": "object",
       "title": "TVL Configuration",
       "properties": {
-        "tvl.verifierCommand": {
+        "tvl.useDocker": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use Docker image 'tvl-env' for verification (Recommended). If false, falls back to local Verifier Command."
+        },
+        "tvl.tvlRepoPath": {
           "type": "string",
-          "default": "/path/to/TVL/repo",
-          "description": "Path to repo with TVL sources."
+          "default": "",
+          "description": "Absolute path to the TVL repository (the one containing the 'translate' script). Used for both Docker and local verification."
         }
       }
     }
