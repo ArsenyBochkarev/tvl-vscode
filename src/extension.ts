@@ -12,8 +12,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const document = editor.document;
-        if (document.languageId !== 'tvl') {
-            vscode.window.showErrorMessage('Active file is not a TVL file.');
+        const fileExt = path.extname(document.fileName).toLowerCase();
+        const isTvir = fileExt === '.tvir';
+        if (fileExt !== '.tvl' && !isTvir) {
+            vscode.window.showErrorMessage('Active file is not a TVL source (.tvl) or IR dump (.tvir).');
             return;
         }
 
@@ -23,32 +25,37 @@ export function activate(context: vscode.ExtensionContext) {
 
         const sourcePath = document.uri.fsPath;
 
-        const checker = await vscode.window.showQuickPick(
-            [
-                { label: 'TLA+', description: 'Verify using TLC model checker', target: 'tla', ext: '.tla' },
-                { label: 'SPIN', description: 'Verify using SPIN/Promela', target: 'spin', ext: '.pml' }
-            ], 
-            { placeHolder: 'Select target model checker' }
-        );
-        if (!checker) {
+        const targetItems = [
+            { label: 'TLA+', description: 'Verify using TLC model checker', target: 'tla' },
+            { label: 'SPIN', description: 'Verify using SPIN/Promela', target: 'spin' }
+        ];
+        // Dumping the IR is only offered for .tvl sources: a .tvir file already is the IR.
+        if (!isTvir) {
+            targetItems.push({ label: 'TVL IR', description: 'Dump the TVL IR (.tvir) — no verification will be performed', target: 'ir' });
+        }
+        const selected = await vscode.window.showQuickPick(targetItems, { placeHolder: 'Select target' });
+        if (!selected) {
             return;
         }
 
-        const defaultFlags = '--channel-size=20 --trace-size=20';
-        const extraFlags = await vscode.window.showInputBox({
-            prompt: 'Additional flags for TVL',
-            placeHolder: 'e.g., --channel-size=10 --trace-size=30',
-            value: defaultFlags,
-            validateInput: (value) => {
-                if (/[;&|`$]/.test(value)) {
-                    return 'Shell metacharacters (;, &, |, `, $) are not allowed for safety.';
+        // The 'ir' target is frontend-only: no flags apply and no verification runs.
+        let extraFlags = '';
+        if (selected.target !== 'ir') {
+            const answer = await vscode.window.showInputBox({
+                prompt: 'Additional flags for TVL',
+                placeHolder: 'e.g., --channel-size=10 --trace-size=30',
+                value: '--channel-size=20 --trace-size=20',
+                validateInput: (value) => {
+                    if (/[;&|`$]/.test(value)) {
+                        return 'Shell metacharacters (;, &, |, `, $) are not allowed for safety.';
+                    }
+                    return null;
                 }
-                return null;
+            });
+            if (answer === undefined) {
+                return;
             }
-        });
-
-        if (extraFlags === undefined) {
-            return;
+            extraFlags = answer.trim();
         }
 
         const config = vscode.workspace.getConfiguration('tvl');
@@ -87,10 +94,10 @@ export function activate(context: vscode.ExtensionContext) {
                 `-v "${dir}":/app`,
                 `-v "${coursierCache}":/home/dev/.cache`,
                 `-v "${sbtCache}":/home/dev/.sbt`,
-                `-w /tvl tvl-env ./translate "/app/${file}" ${checker.target}${flagsPart}`
+                `-w /tvl tvl-env ./translate "/app/${file}" ${selected.target}${flagsPart}`
             ].join(' ');
         } else {
-            verifyFullCmd = `(cd "${tvlRepo}" && ./translate "${sourcePath}" ${checker.target}${flagsPart})`;
+            verifyFullCmd = `(cd "${tvlRepo}" && ./translate "${sourcePath}" ${selected.target}${flagsPart})`;
         }
 
         let terminal = vscode.window.terminals.find(t => t.name === 'TVL Verifier');
@@ -99,7 +106,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         terminal.show();
-        terminal.sendText(`echo "=== Running Verification ===" && ${verifyFullCmd}`);
+        const banner = selected.target === 'ir' ? 'Dumping TVL IR' : 'Running Verification';
+        terminal.sendText(`echo "=== ${banner} ===" && ${verifyFullCmd}`);
     });
 
     context.subscriptions.push(disposable);
