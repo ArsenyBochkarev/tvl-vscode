@@ -27,9 +27,11 @@ export function activate(context: vscode.ExtensionContext) {
 
         const targetItems = [
             { label: 'TLA+', description: 'Verify using TLC model checker', target: 'tla' },
-            { label: 'SPIN', description: 'Verify using SPIN/Promela', target: 'spin' }
+            { label: 'SPIN', description: 'Verify using SPIN/Promela', target: 'spin' },
+            { label: 'Curtis', description: 'Verify using Curtis model checker', target: 'curtis' }
         ];
         // Dumping the IR is only offered for .tvl sources: a .tvir file already is the IR.
+        // Kept last in the list; Curtis is the second-to-last entry.
         if (!isTvir) {
             targetItems.push({ label: 'TVL IR', description: 'Dump the TVL IR (.tvir) — no verification will be performed', target: 'ir' });
         }
